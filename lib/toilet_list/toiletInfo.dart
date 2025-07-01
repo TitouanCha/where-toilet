@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:where_toilet/web_services/toilet.dart';
+import 'package:where_toilet/toilet_list/toilet.dart';
 
 class ToiletInfo extends StatelessWidget {
   final Toilet toilet;

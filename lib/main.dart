@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:where_toilet/web_services/web_services_screen.dart';
+import 'package:where_toilet/toilet_list/toilet_list_screen.dart';
 
 void main() {
   runApp(const MyApp());

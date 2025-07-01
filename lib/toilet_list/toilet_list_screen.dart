@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:where_toilet/web_services/toilet.dart';
-import 'package:where_toilet/web_services/toiletInfo.dart';
+import 'package:where_toilet/toilet_list/toilet.dart';
+import 'package:where_toilet/toilet_list/toiletInfo.dart';
 
 class ServicesScreen extends StatefulWidget {
   const ServicesScreen({super.key});
