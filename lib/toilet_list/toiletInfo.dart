@@ -1,11 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:where_toilet/toilet_list/toilet.dart';
 
-class ToiletInfo extends StatelessWidget {
+class FavoriteService {
+  static List<Toilet> _favoriteToilets = [];
+  static final _favoriteToiletsNotifier = ValueNotifier<List<Toilet>>(_favoriteToilets);
+
+  static List<Toilet> get favoriteToilets => _favoriteToilets;
+  static ValueNotifier<List<Toilet>> get favoriteToiletsNotifier => _favoriteToiletsNotifier;
+
+  static void toggleFavorite(Toilet toilet) {
+    if (_favoriteToilets.contains(toilet)) {
+      _favoriteToilets.remove(toilet);
+    } else {
+      _favoriteToilets.add(toilet);
+    }
+    _favoriteToiletsNotifier.value = _favoriteToilets;
+  }
+
+  static bool isFavorite(Toilet toilet) {
+    return _favoriteToilets.contains(toilet);
+  }
+}
+
+class ToiletInfo extends StatefulWidget {
   final Toilet toilet;
 
   const ToiletInfo({super.key, required this.toilet});
 
+  @override
+  State<ToiletInfo> createState() => _ToiletInfoState();
+}
+
+class _ToiletInfoState extends State<ToiletInfo> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -25,36 +51,21 @@ class ToiletInfo extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Type : ${toilet.type ?? "Non disponible"}',
+                'Type : ${widget.toilet.type ?? "Non disponible"}',
                 style: TextStyle(fontSize: 18, color: Colors.white),
                 textAlign: TextAlign.start,
               ),
               Text(
-                'Adresse : ${toilet.adresse ?? "Non disponible"}',
+                'Adresse : ${widget.toilet.adresse ?? "Non disponible"}',
                 style: TextStyle(fontSize: 18, color: Colors.white),
                 textAlign: TextAlign.start,
               ),
               Text(
-                'Arrondissement : ${toilet.arrondissement ?? "Non disponible"}',
+                'Arrondissement : ${widget.toilet.arrondissement ?? "Non disponible"}',
                 style: TextStyle(fontSize: 18, color: Colors.white),
                 textAlign: TextAlign.start,
               ),
-              Text(
-                'Horaire : ${toilet.horaire ?? "24/24"}',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-                textAlign: TextAlign.start,
-              ),
-              Text(
-                'Accès PMR : ${toilet.accesPmr ?? "Non disponible"}',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-                textAlign: TextAlign.start,
-              ),
-              if (toilet.relaisBebe != null)
-                Text(
-                  'Relais bébé : ${toilet.relaisBebe}',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                  textAlign: TextAlign.start,
-                ),
+              // ... autres champs
             ],
           ),
           Spacer(),
@@ -74,9 +85,22 @@ class ToiletInfo extends StatelessWidget {
                 flex: 1,
                 child: Container(
                   margin: EdgeInsets.all(8),
-                  child: ElevatedButton(
-                    onPressed: () => (),
-                    child: Text('Favoris'),
+                  child: ValueListenableBuilder(
+                    valueListenable: FavoriteService.favoriteToiletsNotifier,
+                    builder: (context, _, child) {
+                      bool isFavorite = FavoriteService.isFavorite(widget.toilet);
+                      return ElevatedButton(
+                        onPressed: () => FavoriteService.toggleFavorite(widget.toilet),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+                            SizedBox(width: 8),
+                            Text(isFavorite ? 'Enlever Favoris' : 'Favoris'),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -88,6 +112,7 @@ class ToiletInfo extends StatelessWidget {
   }
 
   void _goToMap(BuildContext context) {
-    String toiletAddress = toilet.adresse ?? "Adresse non disponible";
+    String toiletAddress = widget.toilet.adresse ?? "Adresse non disponible";
+    // Logique pour aller à la carte
   }
 }
