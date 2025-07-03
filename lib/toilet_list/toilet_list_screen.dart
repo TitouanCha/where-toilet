@@ -13,12 +13,15 @@ class ServicesScreen extends StatefulWidget {
 class _ServicesScreenState extends State<ServicesScreen> {
   bool _loading = true;
   final List<Toilet> _products = [];
+  late List<Toilet> _filteredProducts = [];
   Exception? _error;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _getProducts();
+    _searchController.addListener(_filterProducts);
   }
 
   void _getProducts() async {
@@ -31,13 +34,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
     try {
       final response = await dio.get('/sanisettesparis/records?limit=20');
       final products =
-          (response.data['results'] as List)
-              .map((json) => Toilet.fromJson(json))
-              .toList();
+      (response.data['results'] as List)
+          .map((json) => Toilet.fromJson(json))
+          .toList();
       setState(() {
         _loading = false;
         _products.clear();
         _products.addAll(products);
+        _filteredProducts.addAll(products);
       });
     } catch (error) {
       setState(() {
@@ -46,6 +50,19 @@ class _ServicesScreenState extends State<ServicesScreen> {
       });
     }
   }
+
+  void _filterProducts() {
+    String searchText = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredProducts = _products
+          .where((toilet) =>
+      toilet.adresse!.toLowerCase().contains(searchText) ||
+          toilet.type!.toLowerCase().contains(searchText) ||
+          toilet.horaire!.toLowerCase().contains(searchText))
+          .toList();
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +80,24 @@ class _ServicesScreenState extends State<ServicesScreen> {
           ),
         ),
       ),
-      body: _buildContent(context),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Rechercher',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _buildContent(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -76,14 +110,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
       return Center(child: Text('Oups une erreur est survenue'));
     }
 
-    if (_products.isEmpty) {
+    if (_filteredProducts.isEmpty) {
       return Center(child: Text('Aucune toilettes trouvé'));
     }
 
     return ListView.builder(
-      itemCount: _products.length,
+      itemCount: _filteredProducts.length,
       itemBuilder: (context, index) {
-        final toilet = _products[index];
+        final toilet = _filteredProducts[index];
         return Card(
           margin: EdgeInsets.all(8),
           child: Padding(
@@ -123,7 +157,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           horizontal: 16,
                         ),
                         duration: Duration(days: 1),
-                        content: ToiletInfo(toilet: _products[index]),
+                        content: ToiletInfo(toilet: _filteredProducts[index]),
                       ),
                     );
                   },
@@ -135,5 +169,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
